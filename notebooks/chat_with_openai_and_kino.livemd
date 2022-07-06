@@ -41,7 +41,7 @@ end
 Now we can call the function and, if your API key is right, we will see an answer:
 
 ```elixir
-message = "Why d you like paella?"
+message = "Why do you like paella?"
 
 {:ok, %{choices: [%{"text" => response}]}} = AI.run("You:#{message}\nFriend:")
 
