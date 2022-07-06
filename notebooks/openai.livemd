@@ -1,0 +1,164 @@
+# Building a chat with OpenAI's GPT-3 and Kino
+
+```elixir
+Mix.install(
+  [
+    {:openai, "~> 0.1.1"},
+    {:kino, "~> 0.6.1"}
+  ],
+  config: [
+    openai: [
+      api_key: "...",
+      organisation_key: "..."
+    ]
+  ]
+)
+```
+
+## Test OpenAI
+
+After adding your [OpenAI](https://openai.com) `api_key` and `organisation_key` above, let's create a function to wrap what we need to have a chat with our AI friend:
+
+```elixir
+defmodule AI do
+  def run(prompt) do
+    OpenAI.completions(
+      # engine_id
+      "davinci",
+      prompt: prompt,
+      max_tokens: 60,
+      temperature: 0.5,
+      top_p: 1,
+      presence_penalty: 0.0,
+      frequency_penalty: 0.5,
+      stop: "You:",
+      best_of: 1
+    )
+  end
+end
+```
+
+Now we can call the function and, if your API key is right, we will see an answer:
+
+```elixir
+message = "Why d you like paella?"
+
+{:ok, %{choices: [%{"text" => response}]}} = AI.run("You:#{message}\nFriend:")
+
+response
+```
+
+Try changing the message above and run the cell again to see more answers.
+However, soon you'll see that our AI friend doesn't have short-term memory. Let's improve that!
+
+## Conversation
+
+We'll use an agent to store all messages sent and received in a *Conversation* module:
+
+```elixir
+defmodule Conversation do
+  use Agent
+
+  def start do
+    Agent.start_link(fn -> "" end, name: __MODULE__)
+  end
+
+  def get do
+    Agent.get(__MODULE__, fn conv -> conv end)
+  end
+
+  def append(message) do
+    Agent.update(__MODULE__, fn conv -> conv <> message end)
+  end
+
+  def reset do
+    Agent.update(__MODULE__, fn _ -> "" end)
+  end
+
+  def stop do
+    Agent.stop(__MODULE__)
+  end
+end
+```
+
+Now we start the agent:
+
+```elixir
+Conversation.start()
+```
+
+Let's confirm it works:
+
+```elixir
+Conversation.append("You:Hi!\nFriend:Hey\n")
+Conversation.append("You:Do you like pizza?\nYes!\n")
+Conversation.get()
+```
+
+Let's improve our AI module to keep track of the conversation:
+
+```elixir
+defmodule AI do
+  def ask(text) do
+    Conversation.append("You:" <> text <> "\nFriend:")
+    conversation = Conversation.get()
+
+    case run(conversation) do
+      {:ok, %{choices: [%{"text" => response}]}} ->
+        Conversation.append(response)
+        response
+
+      error ->
+        IO.inspect(error)
+        ""
+    end
+  end
+
+  defp run(prompt) do
+    OpenAI.completions(
+      "davinci",
+      prompt: prompt,
+      max_tokens: 60,
+      temperature: 0.5,
+      top_p: 1,
+      presence_penalty: 0.0,
+      frequency_penalty: 0.5,
+      stop: "You:",
+      best_of: 1
+    )
+  end
+end
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Chat
+
+Now we'll use Kino to build our chat. To have a better understand of this part, have a look at the great tutorial [Building a chat app with Kino.Control](https://github.com/livebook-dev/livebook/blob/main/lib/livebook/notebook/explore/kino/chat_app.livemd)
+
+```elixir
+frame = Kino.Frame.new()
+```
+
+```elixir
+inputs = [message: Kino.Input.text("Message")]
+form = Kino.Control.form(inputs, submit: "Send", reset_on_submit: [:message])
+```
+
+As we use a stream, notice that it will run indefinitely until you stop it.
+New messages from you are appended to the frame and `AI.ask` is called to get the response of our AI friend.
+
+Try sending a few messages.
+
+```elixir
+Conversation.reset()
+
+for %{data: %{message: message}} <- Kino.Control.stream(form) do
+  content = Kino.Markdown.new("**You**: #{message}")
+  Kino.Frame.append(frame, content)
+
+  ai_message = AI.ask(message)
+  ai_content = Kino.Markdown.new("**AI**: #{ai_message}")
+  Kino.Frame.append(frame, ai_content)
+end
+```
