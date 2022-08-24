@@ -1,0 +1,136 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Github API Repo
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.0"}
+])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+## Section
+
+```elixir
+defmodule Github do
+  @github_api_token System.get_env("NOTESCLUB_GITHUB_API_KEY")
+
+  def get!(url) do
+    Req.get!(url,
+      headers: [
+        Accept: ["application/vnd.github+json"],
+        Authorization: ["token #{@github_api_token}"]
+      ]
+    )
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Github, <<70, 79, 82, 49, 0, 0, 6, ...>>, {:get!, 1}}
+```
+
+```elixir
+body = Github.get!("https://api.github.com/repos/livebook-dev/livebook").body
+
+%{
+  default_branch: body["default_branch"],
+  fork: body["fork"],
+  name: body["name"],
+  full_name: body["full_name"],
+  github_response: body
+}
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{
+  default_branch: "main",
+  fork: false,
+  full_name: "livebook-dev/livebook",
+  github_response: %{
+    "labels_url" => "https://api.github.com/repos/livebook-dev/livebook/labels{/name}",
+    "keys_url" => "https://api.github.com/repos/livebook-dev/livebook/keys{/key_id}",
+    "fork" => false,
+    "owner" => %{
+      "avatar_url" => "https://avatars.githubusercontent.com/u/87464290?v=4",
+      "events_url" => "https://api.github.com/users/livebook-dev/events{/privacy}",
+      "followers_url" => "https://api.github.com/users/livebook-dev/followers",
+      "following_url" => "https://api.github.com/users/livebook-dev/following{/other_user}",
+      "gists_url" => "https://api.github.com/users/livebook-dev/gists{/gist_id}",
+      "gravatar_id" => "",
+      "html_url" => "https://github.com/livebook-dev",
+      "id" => 87464290,
+      "login" => "livebook-dev",
+      "node_id" => "MDEyOk9yZ2FuaXphdGlvbjg3NDY0Mjkw",
+      "organizations_url" => "https://api.github.com/users/livebook-dev/orgs",
+      "received_events_url" => "https://api.github.com/users/livebook-dev/received_events",
+      "repos_url" => "https://api.github.com/users/livebook-dev/repos",
+      "site_admin" => false,
+      "starred_url" => "https://api.github.com/users/livebook-dev/starred{/owner}{/repo}",
+      "subscriptions_url" => "https://api.github.com/users/livebook-dev/subscriptions",
+      "type" => "Organization",
+      "url" => "https://api.github.com/users/livebook-dev"
+    },
+    "hooks_url" => "https://api.github.com/repos/livebook-dev/livebook/hooks",
+    "id" => 327711808,
+    "teams_url" => "https://api.github.com/repos/livebook-dev/livebook/teams",
+    "full_name" => "livebook-dev/livebook",
+    "git_commits_url" => "https://api.github.com/repos/livebook-dev/livebook/git/commits{/sha}",
+    "default_branch" => "main",
+    "downloads_url" => "https://api.github.com/repos/livebook-dev/livebook/downloads",
+    "stargazers_url" => "https://api.github.com/repos/livebook-dev/livebook/stargazers",
+    "blobs_url" => "https://api.github.com/repos/livebook-dev/livebook/git/blobs{/sha}",
+    "collaborators_url" => "https://api.github.com/repos/livebook-dev/livebook/collaborators{/collaborator}",
+    "permissions" => %{
+      "admin" => false,
+      "maintain" => false,
+      "pull" => true,
+      "push" => false,
+      "triage" => false
+    },
+    "node_id" => "MDEwOlJlcG9zaXRvcnkzMjc3MTE4MDg=",
+    "watchers_count" => 2932,
+    "notifications_url" => "https://api.github.com/repos/livebook-dev/livebook/notifications{?since,all,participating}",
+    "compare_url" => "https://api.github.com/repos/livebook-dev/livebook/compare/{base}...{head}",
+    "trees_url" => "https://api.github.com/repos/livebook-dev/livebook/git/trees{/sha}",
+    "clone_url" => "https://github.com/livebook-dev/livebook.git",
+    "has_downloads" => true,
+    "subscription_url" => "https://api.github.com/repos/livebook-dev/livebook/subscription",
+    "url" => "https://api.github.com/repos/livebook-dev/livebook",
+    "statuses_url" => "https://api.github.com/repos/livebook-dev/livebook/statuses/{sha}",
+    "milestones_url" => "https://api.github.com/repos/livebook-dev/livebook/milestones{/number}",
+    "network_count" => 246,
+    "svn_url" => "https://github.com/livebook-dev/livebook",
+    "events_url" => "https://api.github.com/repos/livebook-dev/livebook/events",
+    "updated_at" => "2022-08-24T15:40:20Z",
+    "created_at" => "2021-01-07T19:57:18Z",
+    "html_url" => "https://github.com/livebook-dev/livebook",
+    "archived" => false,
+    "allow_forking" => true,
+    "pulls_url" => "https://api.github.com/repos/livebook-dev/livebook/pulls{/number}",
+    "mirror_url" => nil,
+    "has_projects" => false,
+    "has_wiki" => false,
+    "topics" => ["charts", "collaborative", "elixir", "liveview", "markdown", "math", "notebooks",
+     ...],
+    "language" => "Elixir",
+    "contributors_url" => "https://api.github.com/repos/livebook-dev/livebook/contributors",
+    "web_commit_signoff_required" => false,
+    "issue_events_url" => "https://api.github.com/repos/livebook-dev/livebook/issues/events{/number}",
+    "forks" => 246,
+    "merges_url" => "https://api.github.com/repos/livebook-dev/livebook/merges",
+    "subscribers_count" => 63,
+    ...
+  },
+  name: "livebook"
+}
+```
