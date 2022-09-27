@@ -1,0 +1,56 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Extract mix packages from notebook
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.1"}
+])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+## Section
+
+```elixir
+response =
+  Req.get!(
+    "https://raw.githubusercontent.com/elixir-nx/axon/main/guides/model_creation/multi_input_multi_output_models.livemd"
+  )
+
+content = response.body
+```
+
+<!-- livebook:{"output":true} -->
+
+````
+"<!-- livebook:{\"persist_outputs\":true} -->\n\n# Multi-input / multi-output models\n\n```elixir\nMix.install([\n  {:axon, github: \"elixir-nx/axon\"},\n  {:nx, \"~> 0.3.0\", override: true},\n  {:kino, \"~> 0.6.2\"}\n])\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n:ok\n```\n\n## Creating multi-input models\n\nSometimes your application necessitates the use of multiple inputs. To use multiple inputs in an Axon model, you just need to declare multiple inputs in your graph:\n\n```elixir\ninput_1 = Axon.input(\"input_1\")\ninput_2 = Axon.input(\"input_2\")\n\nout = Axon.add(input_1, input_2)\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n#Axon<\n  inputs: %{\"input_1\" => nil, \"input_2\" => nil}\n  outputs: \"add_0\"\n  nodes: 4\n>\n```\n\nNotice when you inspect the model, it tells you what your models inputs are up front. You can also get metadata about your model inputs programmatically with `Axon.get_inputs/1`:\n\n```elixir\nAxon.get_inputs(out)\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n%{\"input_1\" => nil, \"input_2\" => nil}\n```\n\nEach input is uniquely named, so you can pass inputs by-name into inspection and execution functions with a map:\n\n```elixir\ninputs = %{\n  \"input_1\" => Nx.template({2, 8}, :f32),\n  \"input_2\" => Nx.template({2, 8}, :f32)\n}\n\nAxon.Display.as_graph(out, inputs)\n```\n\n```elixir\n{init_fn, predict_fn} = Axon.build(out)\nparams = init_fn.(inputs, %{})\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n%{}\n```\n\n```elixir\ninputs = %{\n  \"input_1\" => Nx.iota({2, 8}, type: :f32),\n  \"input_2\" => Nx.iota({2, 8}, type: :f32)\n}\n\npredict_fn.(params, inputs)\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n#Nx.Tensor<\n  f32[2][8]\n  [\n    [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0],\n    [16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0]\n  ]\n>\n```\n\nIf you forget a required input, Axon will raise:\n\n```elixir\npredict_fn.(params, %{\"input_1\" => Nx.iota({2, 8}, type: :f32)})\n```\n\n## Creating multi-output models\n\nDepending on your application, you might also want your model to have multiple outputs. You can achieve this by using `Axon.container/2` to wrap multiple nodes into any supported Nx container:\n\n```elixir\ninp = Axon.input(\"data\")\n\nx1 = inp |> Axon.dense(32) |> Axon.relu()\nx2 = inp |> Axon.dense(64) |> Axon.relu()\n\nout = Axon.container({x1, x2})\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n#Axon<\n  inputs: %{\"data\" => nil}\n  outputs: \"container_0\"\n  nodes: 6\n>\n```\n\n```elixir\ntemplate = Nx.template({2, 8}, :f32)\nAxon.Display.as_graph(out, template)\n```\n\nWhen executed, containers will return a data structure which matches their input structure:\n\n```elixir\n{init_fn, predict_fn} = Axon.build(out)\nparams = init_fn.(template, %{})\npredict_fn.(params, Nx.iota({2, 8}, type: :f32))\n```\n\n<!-- livebook:{\"output\":true} -->\n\n```\n{#Nx.Tensor<\n   f32[2][32]\n   [\n     [0.0, 0.0, 4.356653690338135, 0.0, 2.9040682315826416, 0.0, 0.0, 4.731359481811523, 1.2990269660949707, 0.018219254910945892, 4.65255069732666, 0.0, 1.9989535808563232, 0.0, 4.950902462005615, 0.0, 0.0, 1.7227286100387573, 3.0944247245788574, 1.1740816831588745, 0.0, 0.7876152396202087, 0.0, 0.0, 0.0, 1.0357654094696045, 0.0, 0.0, 3.2888245582580566, 0.1904522031545639, 0.0, 1.453606128692627],\n     [0.0, 0.0, 6.0287184715271, 1.0349078178405762, 8.212652206420898, 0.0, 0.0, 12.817267417907715, 2.3070132732391357, 0.0404585525393486, 14.77083969116211, 0.0, 6.536672115325928, 0.0, 12.491460800170898, 0.0, 0.0, ...]\n   ]\n >,\n #Nx.Tensor<\n   f32[2][64]\n   [\n     [0.0, 2.5132815837860107, 1.6950541734695435, 1.7307755947113037, 0.0, 2.72218656539917, 0.0, 0.0, 0.7478247284889221, 2.290632724761963, 0.0, 0.0, 0.0, 3.0882949829101562, 0.0, 3.837374448776245, 2.283672332763672, 0.0, 3.169905185699463, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.9927127361297607, 0.7707458138465881, 0.0, 0.0, 0.0, 1.2103263139724731, 0.0, 0.0, 0.0, 0.0, 4.732686996459961, 1.5016757249832153, 0.0, 0.5466610789299011, 1.6743775606155396, 0.5262413024902344, 0.0, 2.1587936878204346, 3.0746116638183594, 0.0, 0.541134238243103, 0.527652382850647, 0.0, ...],\n     ...\n   ]\n >}\n```\n\nYou can output maps as well:\n\n```elixir\nout = Axon.container(%{x1: x1, x2: x2})\n```\n\n<!-- liv" <> ...
+````
+
+```elixir
+packages =
+  Regex.run(~r/Mix\.install\(\[([^\]]*)\]\)/, content)
+  |> List.last()
+  |> String.trim()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"{:axon, github: \"elixir-nx/axon\"},\n  {:nx, \"~> 0.3.0\", override: true},\n  {:kino, \"~> 0.6.2\"}"
+```
+
+```elixir
+Regex.scan(~r/\:(\w+)/, packages, global: true)
+|> Enum.map(fn package -> List.last(package) end)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+["axon", "nx", "kino"]
+```
