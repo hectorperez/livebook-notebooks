@@ -1,0 +1,42 @@
+# Factorial with tail-call optimization
+
+## Section
+
+```elixir
+defmodule Math do
+  def factorial(0), do: 0
+
+  # Recursive factorial
+  #
+  # def factorial(n) do
+  #  factorial(n - 1) * n
+  # end
+
+  # Tail-call optimization
+  def factorial(n), do: factorial(n, 1)
+  def factorial(1, acc), do: acc
+
+  def factorial(n, acc) do
+    factorial(n - 1, acc * n)
+  end
+end
+```
+
+```elixir
+ExUnit.start(autorun: false)
+
+defmodule Math.Test do
+  use ExUnit.Case, async: false
+
+  test "Factorial from 0 to 5" do
+    assert 0 == Math.factorial(0)
+    assert 1 == Math.factorial(1)
+    assert 2 == Math.factorial(2)
+    assert 6 == Math.factorial(3)
+    assert 24 == Math.factorial(4)
+    assert 120 == Math.factorial(5)
+  end
+end
+
+ExUnit.run()
+```
