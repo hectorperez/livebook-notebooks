@@ -1,0 +1,179 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Search on Google via Serper API
+
+```elixir
+Mix.install([
+  {:req, "~> 0.3.11"},
+  {:jason, "~> 1.4"}
+])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+## Section
+
+```elixir
+defmodule GoogleSearch do
+  def perform_search(query) do
+    data = %{
+      "q" => query,
+      "autocorrect" => false
+    }
+
+    headers = [
+      {"X-API-KEY", System.fetch_env!("LB_SERPER_API_KEY")},
+      {"Content-Type", "application/json"}
+    ]
+
+    case Req.post("https://google.serper.dev/search", body: Jason.encode!(data), headers: headers) do
+      {:ok, response} ->
+        {:ok, response.body}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, GoogleSearch, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:perform_search, 1}}
+```
+
+```elixir
+GoogleSearch.perform_search("Livebook notebooks")
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:ok,
+ %{
+   "organic" => [
+     %{
+       "imageUrl" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUUdDeAEnlfLZKUKJtqHwC6ZK5Fru7xF7aKte0mvPxkbEcS2fBkDQ3LIs&s",
+       "link" => "https://livebook.dev/",
+       "position" => 1,
+       "sitelinks" => [
+         %{"link" => "https://livebook.dev/integrations/elixir/", "title" => "Elixir integration"},
+         %{"link" => "https://news.livebook.dev/", "title" => "What's new?"},
+         %{"link" => "https://livebook.dev/settings/", "title" => "Settings"},
+         %{"link" => "https://livebook.dev/badge/", "title" => "Create badge"}
+       ],
+       "snippet" => "Notebooks are stored as .livemd files, a subset of Markdown that meshes together prose, code, and diagrams. Livebooks are easy to read, share, and version ...",
+       "title" => "Home - Livebook.dev"
+     },
+     %{
+       "imageUrl" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZRzc7AqLQV8mfnOOeEp6pgNvaZ_rbv8kZSaiV8n4t6aB-0rfd9c_cfp0&s",
+       "link" => "https://github.com/livebook-dev/livebook",
+       "position" => 2,
+       "sitelinks" => [
+         %{"link" => "https://github.com/livebook-dev/livebook/pulls", "title" => "Pull requests 3"},
+         %{"link" => "https://github.com/livebook-dev/livebook/issues", "title" => "Issues 23"},
+         %{
+           "link" => "https://github.com/livebook-dev/livebook/blob/main/CHANGELOG.md",
+           "title" => "CHANGELOG.md"
+         },
+         %{
+           "link" => "https://github.com/livebook-dev/livebook/blob/main/README.md",
+           "title" => "README.md"
+         }
+       ],
+       "snippet" => "Livebook is a web application for writing interactive and collaborative code notebooks. It features: Code notebooks with Markdown support and Code cells ...",
+       "title" => "livebook-dev/livebook: Automate code & data workflows with interactive Elixir notebooks - GitHub"
+     },
+     %{
+       "date" => "Jun 15, 2023",
+       "link" => "https://huggingface.co/blog/livebook-app-deployment",
+       "position" => 3,
+       "snippet" => "If you don't know Livebook yet, it is an open-source tool for writing interactive code notebooks in Elixir, and it's part of the growing ...",
+       "title" => "Deploy Livebook notebooks as apps to Hugging Face Spaces"
+     },
+     %{
+       "imageUrl" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4rHMuN-Q8Zph5VU8mVQxDIDMBOBNCmbENvNTpZCvvxhC0FTOeMXz-1YQ&s",
+       "link" => "https://github.com/w0rd-driven/livebook_notebooks",
+       "position" => 4,
+       "snippet" => "Collection of Livebook notebooks. Livebook is also a great way to get your feet wet with Elixir concepts, like a powerful language scratchpad. Table of Contents.",
+       "title" => "w0rd-driven/livebook_notebooks: Collection of useful Livebook notebooks - GitHub"
+     },
+     %{
+       "attributes" => %{"Duration" => "14:01", "Posted" => "Apr 11, 2023"},
+       "date" => "Apr 11, 2023",
+       "imageUrl" => "https://i.ytimg.com/vi/MSMyRBJAoSs/default.jpg?sqp=-oaymwEECHgQQw&rs=AMzJL3lrah517UbpuNX3hXX7U0AnmluFTw",
+       "link" => "https://youtube.com/watch?v=MSMyRBJAoSs",
+       "position" => 5,
+       "snippet" => "Blog post: https://news.livebook.dev/distributed2-machine ...",
+       "title" => "Distributed² Machine Learning notebooks with Elixir and Livebook - Livebook Launch Week 1 - Day 2 - YouTube"
+     },
+     %{
+       "imageUrl" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLHON66GajnAqTgLdW1yxsngGobu89nHduO9Y7_qHR0hfvHkL_YIV_qNQ&s",
+       "link" => "https://www.manning.com/livebook-program",
+       "position" => 6,
+       "snippet" => "A unique online reader · Free access to all 700+ Manning books and videos · Annotated code samples with one-click copy · Add your own notes and fast-find bookmarks ...",
+       "title" => "liveBook - Manning Publications"
+     },
+     %{
+       "link" => "https://notes.club/",
+       "position" => 7,
+       "snippet" => "Discover Livebook notebooks (Elixir). 3882 notebooks and counting. Feel free to contribute on GitHub. Random. Featured: @livebook-dev @elixir-nx @josevalim ...",
+       "title" => "Notesclub · Livebook Notebooks (Elixir)"
+     },
+     %{
+       "date" => "May 26, 2021",
+       "link" => "https://fly.io/blog/livebook-for-app-documentation/",
+       "position" => 8,
+       "snippet" => "Livebook is Elixir's answer to something like Jupyter notebooks. It's an exciting project created to help use Nx, Axon and machine learning with ...",
+       "title" => "Livebook is a secret weapon for documentation - Fly.io"
+     },
+     %{
+       "date" => "May 23, 2022",
+       "link" => "https://blog.appsignal.com/2022/05/24/livebook-for-elixir-just-what-the-docs-ordered.html",
+       "position" => 9,
+       "snippet" => "Livebooks are supercharged markdown files where you can add sections of arbitrary executable Elixir code. They are inspired by similar notebooks ...",
+       "title" => "Livebook for Elixir: Just What the Docs Ordered - AppSignal Blog"
+     },
+     %{
+       "date" => "Aug 22, 2022",
+       "imageUrl" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzXZBzQiYndWeHjWpc0VY82TMMnxUnxXmn8a1_Coks0c9fafLTgyRMNTk&s",
+       "link" => "https://elixirforum.com/t/notesclub-discover-livebook-notebooks/49698",
+       "position" => 10,
+       "snippet" => "Hello! I built https://notes.club to discover Livebook notebooks. At the moment it is a proof of concept. But you can already browse and run ...",
+       "title" => "Notesclub — Discover Livebook Notebooks - Other Resources - Elixir Forum"
+     }
+   ],
+   "peopleAlsoAsk" => [
+     %{
+       "link" => "https://huggingface.co/docs/hub/spaces-sdks-docker-livebook",
+       "question" => "What is livebook elixir?",
+       "snippet" => "Livebook is an open-source tool for writing interactive code notebooks in\nElixir. It's part of a growing collection of Elixir tools for numerical\ncomputing, data science, and Machine Learning.",
+       "title" => "Livebook on Spaces - Hugging Face"
+     },
+     %{
+       "link" => "https://github.com/livebook-dev/livebook",
+       "question" => "What is the default port of Livebook?",
+       "snippet" => "Defaults to 8080. If set to 0, a random port will be picked.\nLIVEBOOK_SECRET_KEY_BASE - sets a secret key that is used to sign and encrypt\nthe session and other payloads used by Livebook.",
+       "title" => "livebook-dev/livebook: Automate code & data workflows with interactive Elixir notebooks - GitHub"
+     }
+   ],
+   "relatedSearches" => [
+     %{"query" => "Livebook examples"},
+     %{"query" => "Livebook docs"},
+     %{"query" => "Livebook Docker"},
+     %{"query" => "Livebook Linux"},
+     %{"query" => "Livebook vs Jupyter"},
+     %{"query" => "Livebook Python"},
+     %{"query" => "Livebook Explorer"},
+     %{"query" => "Livebook hexdocs"}
+   ],
+   "searchParameters" => %{"autocorrect" => false, "q" => "Livebook notebooks", "type" => "search"}
+ }}
+```
+
+<!-- livebook:{"offset":7886,"stamp":{"token":"QTEyOEdDTQ.CNpyFSIPeGLriDgGX1BsHU88qF76nmaz12-WeWmDipPNnCKD7qjcR1SBeac.d1IE6IbpYi11PYA3.Vsh4wtmkade9eSYG5Z8bHcWU2UNmUeTPnwgSVyxCN0ivhirVdwoHaw-5wF3LX_4A_g.Et5YEA9OzhGvDr6i-b93bg","version":1}} -->
