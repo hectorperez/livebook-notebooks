@@ -1,0 +1,176 @@
+<!-- livebook:{"file_entries":[{"name":"livebook-attached-node.png","type":"attachment"}]} -->
+
+# Introduction to Livebook — Lightning Talk
+
+```elixir
+Mix.install(
+  [
+    {:kino, "~> 0.11.0"},
+    {:kino_vega_lite, "~> 0.1.10"},
+    {:req, "~> 0.4.4"},
+    {:kino_bumblebee, "~> 0.4.0"},
+    {:exla, ">= 0.0.0"}
+  ],
+  config: [nx: [default_backend: EXLA.Backend]]
+)
+```
+
+## Interactive code notebooks
+
+* You can use it in your computer (most common) or use it from a server
+* [livebook.dev](https://livebook.dev)
+
+## Livebook vs Jupyter
+
+```elixir
+a = 1
+```
+
+```elixir
+a = a + 1
+```
+
+## Markdown and Mermaid diagrams
+
+We can add Markdown and mermaid cells
+
+<!-- livebook:{"break_markdown":true} -->
+
+<!-- Learn more at https://mermaid-js.github.io/mermaid -->
+
+```mermaid
+graph TD;
+  A-->B;
+  A-->C;
+  B-->D;
+  C-->D;
+```
+
+## Feed
+
+Add and use any hex package:
+
+```elixir
+Req.get("http://demo.doofinder.com")
+```
+
+## Debug
+
+```elixir
+1..10
+|> Enum.map(&(&1 + 2))
+|> Enum.map(&(&1 * 5))
+|> Enum.sum()
+```
+
+```elixir
+1..10
+|> Enum.map(&(&1 + 2))
+|> Enum.map(&(&1 * 5))
+|> Enum.sum()
+|> dbg()
+```
+
+```elixir
+1..10
+|> Stream.map(&(&1 + 2))
+|> Stream.map(&(&1 * 5))
+|> Enum.sum()
+|> dbg()
+```
+
+## Debug local/staging/production node (e.g. phoenix app)
+
+![](files/livebook-attached-node.png)
+
+## Processes
+
+```elixir
+processes =
+  for pid <- Process.list() do
+    info = Process.info(pid, [:reductions, :memory, :status])
+
+    %{
+      pid: inspect(pid),
+      reductions: info[:reductions],
+      memory: info[:memory],
+      status: info[:status]
+    }
+  end
+```
+
+```elixir
+memory_eaters =
+  processes
+  |> Enum.sort_by(&(-&1[:memory]))
+  |> Enum.take(5)
+```
+
+## Smartcells — Charts
+
+<!-- livebook:{"attrs":{"chart_title":null,"height":null,"layers":[{"active":true,"chart_type":"point","color_field":"pid","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"memory_eaters","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"reductions","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"quantitative","y_field":"memory","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":null},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new()
+|> VegaLite.data_from_values(memory_eaters, only: ["reductions", "memory", "pid"])
+|> VegaLite.mark(:point)
+|> VegaLite.encode_field(:x, "reductions", type: :quantitative)
+|> VegaLite.encode_field(:y, "memory", type: :quantitative)
+|> VegaLite.encode_field(:color, "pid", type: :nominal)
+```
+
+## Smartcells - IA
+
+<!-- livebook:{"attrs":{"compiler":"exla","sequence_length":100,"task_id":"text_classification","top_k":null,"variant_id":"roberta_bertweet_sentiment"},"chunks":[[0,337],[339,496]],"kind":"Elixir.KinoBumblebee.TaskCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, model_info} =
+  Bumblebee.load_model({:hf, "finiteautomata/bertweet-base-sentiment-analysis"})
+
+{:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, "vinai/bertweet-base"})
+
+serving =
+  Bumblebee.Text.text_classification(model_info, tokenizer,
+    compile: [batch_size: 1, sequence_length: 100],
+    defn_options: [compiler: EXLA]
+  )
+
+text_input = Kino.Input.textarea("Text", default: "Cats are so cute")
+form = Kino.Control.form([text: text_input], submit: "Run")
+frame = Kino.Frame.new()
+
+Kino.listen(form, fn %{data: %{text: text}} ->
+  Kino.Frame.render(frame, Kino.Text.new("Running..."))
+  output = Nx.Serving.run(serving, text)
+
+  output.predictions
+  |> Enum.map(&{&1.label, &1.score})
+  |> Kino.Bumblebee.ScoredList.new()
+  |> then(&Kino.Frame.render(frame, &1))
+end)
+
+Kino.Layout.grid([form, frame], boxed: true, gap: 16)
+```
+
+## Apps
+
+Open `app_example.livemd`
+
+## Animations
+
+```elixir
+Kino.animate(100, fn i ->
+  Kino.Markdown.new("**Iteration: `#{i}`**")
+end)
+```
+
+## Browse and search public notebooks
+
+[notes.club](https://notes.club) — an open source site I created to discover notebooks
+
+## Try Livebook now without installing it
+
+* https://doolivebook.fly.dev
+* Password in #developers in Doofinder's Slack
+
+You can also install it in your computer (recommended): [livebook.dev](https://livebook.dev)
