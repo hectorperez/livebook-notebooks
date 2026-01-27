@@ -1,0 +1,488 @@
+# LLMs, agents and MCP in the Elixir Madrid meetup (workshop)
+
+```elixir
+Mix.install([
+  {:req, "~> 0.5.16"},
+  {:kino, "~> 0.18.0"}
+])
+```
+
+## Something about me
+
+I'm Hector Perez, you can reach me at hec@hecperez.com, [Linkedin](https://www.linkedin.com/in/hectorperezarenas), [Bluesky](https://bsky.app/profile/hecperez.com) or [X](https://x.com/arpahector):
+
+* Team lead/manager of the AI team at [Doofinder](https:doofinder.com). We build apps for e-commerce stores: search engine, product recommendations, AI assistant (try it [here](https://www.eurekakids.es)) and others. **We're hiring!**
+* Organizer of the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir/events/312649476). Would you like to give a talk or workshop? Reach me.
+* Creator of [notes.club](https://notes.club): an [open source](https://github.com/notesclub/notesclub) site to discover Livebook notebooks.
+* Founder of [YouCongress.org](https://youcongress.org) to help citizens, journalists and policymakers understand what experts and citizens think about AI governance and AI's impact on society. It's also an [open source](https://github.com/youcongress/youcongress) phoenix app.
+
+## Agenda
+
+* Examples and exercises to use LLMs and agents in applications
+* Create your first MCP Server
+
+## LLM Example: extract tags from Livebook notebooks
+
+```elixir
+url = "https://notes.club/josevalim/livebooks/talks/2024/09-euruko"
+notebook = Req.get!(url <> "/raw").body
+```
+
+In this workshop, you'll be provided with an OpenRouter api key so no need to create an account there. But you need to add it to Livebook (left menu -> secrets -> `OPENROUTER_API_KEY` = `the one provided in this workshop`)
+
+```elixir
+prompt = """
+Extract a list of tags from the following Livebook notebook. 
+Return elixir tags such as ecto, genserver, etc.
+"""
+
+openrouter_api_key = System.fetch_env!("LB_OPENROUTER_API_KEY")
+
+response = Req.post!("https://openrouter.ai/api/v1/chat/completions",
+  auth: {:bearer, openrouter_api_key},
+  json: %{
+    model: "openai/gpt-oss-120b",
+    provider: %{
+      sort: "throughput",
+    },
+    messages: [
+      %{role: "user", content: prompt <> " \n\n#{notebook}"}
+    ]
+  }
+)
+
+tags = response.body["choices"] |> List.first() |> get_in(["message", "content"])
+```
+
+## Example: Structured outputs
+
+Providing a JSON schema ensures the LLM returns the schema we desire:
+
+```elixir
+defmodule AI do
+  @openrouter_api_key System.fetch_env!("LB_OPENROUTER_API_KEY")
+  
+  def ask(prompt, json_schema) do
+    response = Req.post!("https://openrouter.ai/api/v1/chat/completions",
+      auth: {:bearer, @openrouter_api_key},
+      json: %{
+        model: "openai/gpt-oss-120b",
+        provider: %{
+          sort: "throughput",
+        },
+        messages: [
+          %{role: "user", content: prompt}
+        ],
+        response_format: %{
+          type: "json_schema",
+          json_schema: json_schema
+        }
+      }
+    )
+      
+    response.body["choices"] 
+    |> List.first() 
+    |> get_in(["message", "content"]) 
+    |> Jason.decode!()
+  end
+end
+```
+
+```elixir
+prompt = "Extract a list of tags from the following Livebook notebook content. Return elixir tags such as elixir, genserver, etc."
+prompt = prompt <> " \n\n#{notebook}"
+
+json_schema = %{
+  name: "tags_extraction",
+  strict: true,
+  schema: %{
+    type: "object",
+    properties: %{
+      tags: %{
+        type: "array",
+        items: %{type: "string"}
+      }
+    },
+    required: ["tags"],
+    additionalProperties: false
+  }
+}
+
+AI.ask(prompt, json_schema)["tags"]
+```
+
+## Exercise: rate livebooks
+
+Rate the notebook from 0 (worst) to 100 (best) according to how good they are, how instructive, how likely others will like them, etc.
+
+```elixir
+prompt = "..."
+
+# json_schema = ...
+
+# AI.ask...
+```
+
+### Real open source use cases
+
+Tag and rate Livebook noteboks on [notes.club](https://notes.club): https://github.com/notesclub/notesclub/blob/main/lib/notesclub/notebooks/analyser/ai_analyser.ex#L88
+
+Tag policies and claims on YouCongress: https://github.com/youcongress/youcongress/blob/main/lib/you_congress/halls/classification.ex
+
+## Exercise: fix grammar
+
+Now we're going to fix the grammar. For this we wouldn't need structured outputs, but it is handy if we later generate other data (as we'll see in the open source use case below).
+
+```elixir
+sentence = "hey elixri developrs!" # We'd like to get "hey elixir developers!"
+
+# prompt = "... #{sentence}"
+
+# json_schema = ...
+
+# AI.ask...
+```
+
+### Real open source use case
+
+Ensure the grammar of the policy added by a user on [YouCongress](youcongress.org) is right and propose two other alternatives: https://github.com/youcongress/youcongress/blob/main/lib/you_congress/statements/title_rewording_ai.ex
+
+## AI Agents
+
+An AI agent (nothing to do with a BEAM Agent) is a loop that
+
+* observes current state + goal
+* decides next action (may use an LLM)
+* executes actions
+* update memory/state
+
+<!-- livebook:{"break_markdown":true} -->
+
+<!-- Learn more at https://mermaid-js.github.io/mermaid -->
+
+```mermaid
+flowchart TD
+
+  %% LLM call
+  subgraph LLM_Call[LLM call]
+    P[Prompt]
+    L[LLM]
+    O[Output]
+
+    P --> L
+    L --> O
+  end
+
+  %% AI Agent
+  subgraph AI_Agent[AI Agent]
+    G[Goal]
+    M[(Memory State)]
+    D{Decide}
+    A[Act]
+    S((Done))
+
+    G --> D
+    D --> A
+    A --> M
+    M --> D
+    D -- stop --> S
+  end
+
+  %% Relationship
+  D -. may use LLM .-> L
+
+```
+
+## AI Agent open source example: Find quotes with sources
+
+We find quotes (with sources) automatically about policies on [YouCongress](youcongress.org) (and ensure the source urls exist and that they include the quotes):
+
+We could build our own agent but, as a first approach, we use the reasoning model gpt-5.2 with high effort + search tool.
+https://github.com/youcongress/youcongress/blob/main/lib/you_congress/opinions/quotes/quotator_ai.ex
+
+<!-- livebook:{"break_markdown":true} -->
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+"reasoning" => %{"effort" => "high"},
+"tools" => [
+  %{"type" => "web_search"}
+],
+```
+
+## MCP
+
+MCP is a protocol that lets an LLM client discover and invoke tools via a message contract.
+
+<!-- livebook:{"break_markdown":true} -->
+
+<!-- Learn more at https://mermaid-js.github.io/mermaid -->
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant MCP_Server as MCP Server
+
+    Client->>MCP_Server: initialize
+    MCP_Server-->>Client: ready
+
+    Client->>MCP_Server: list_tools
+    MCP_Server-->>Client: tools[] (name, schema, description)
+
+    Client->>MCP_Server: call_tool(tool_name, arguments)
+    MCP_Server->>MCP_Server: Execute tool
+    MCP_Server-->>Client: tool_result
+
+```
+
+## MCP Server
+
+Let's create an MCP Server and our first tool to allow ChatGPT, Claude, etc. to find sourced quotes on [YouCongress.org](https://youcongress.org).
+
+Prepare the repo:
+
+* `git clone git@github.com:youcongress/youcongress.git`
+* `cd youcongress`
+* `mix deps.get`
+* `mix ecto.setup`
+* confirm `localhost:4000` works in your browser.
+
+Add [anubis-mcp](https://github.com/zoedsoupe/anubis-mcp) (formerly hermes_mcp) to `mix.exs`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+{:anubis_mcp, "~> 0.17.0"}
+```
+
+Get the dependency:
+
+```sh
+mix deps.get
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add to `application.ex`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+# MCP Server
+children = [
+  ...
+  Anubis.Server.Registry,
+  {YouCongressWeb.MCPServer, transport: :streamable_http},
+]
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Create the MCP Server:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+defmodule YouCongressWeb.MCPServer do
+  use Anubis.Server,
+    name: "YouCongress",
+    version: "1.0.0",
+    capabilities: [:tools]
+
+  # Tools
+  component(YouCongressWeb.MCPServer.Search)
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add `/mcp` to `router.ex`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+  scope "/" do
+    pipe_through(:api)
+
+    forward "/mcp", Elixir.Anubis.Server.Transport.StreamableHTTP.Plug,
+      server: YouCongressWeb.MCPServer
+  end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add this to config/test.exs
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+# Disable the MCP session store during tests to avoid runtime warnings.
+config :anubis_mcp, :session_store, enabled: false
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+And the first Search tool:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+defmodule YouCongressWeb.MCPServer.Search do
+  @moduledoc "Search quotes and authors on YouCongress."
+
+  use Anubis.Server.Component, type: :tool
+
+  alias Anubis.Server.Response
+  alias YouCongress.Opinions
+
+  schema do
+    field :query, :string, required: true
+  end
+
+  def execute(%{query: query}, frame) do
+    opinions =
+      [search: query, preload: [:author]]
+      |> Opinions.list_opinions()
+      |> Enum.map(fn opinion ->
+        %{
+          quote: opinion.content,
+          author: opinion.author.name,
+          source_url: opinion.source_url
+        }
+      end)
+
+    data = %{
+      quotes: opinions
+    }
+
+    {:reply, Response.json(Response.tool(), data), frame}
+  end
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Open `http://localhost:4000/mcp` in your browser and confirm it returns something like this:
+
+```
+{"error":{"code":-32600,"data":{"data":{"message":"Accept header must include text/event-stream","http_status":406}},"message":"Invalid Request"},"id":"err_GIeGb38hcatuoLfvVKA=","jsonrpc":"2.0"}
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Now add the MCP tool to your app. We're using Claude Code but it's similar in other tools:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "the openrouter api key you received in this workshop",
+    "ANTHROPIC_API_KEY": ""
+  },
+  "permissions": {}
+}
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Open Claude Code:
+
+```sh
+claude
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add the local YouCongress MCP tool:
+
+```sh
+claude mcp add --transport http youcongress http://localhost:4000/mcp
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+List the tool
+
+```sh
+claude mcp list
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Ask claude:
+
+```
+Find lorem ipsum quotes
+```
+
+## MCP exercise: Create a new tool to list or search statements and another to find quotes given a statement_id
+
+After you have done it, Claude should be able to find statements (policies and claims) and all quotes related to those statements.
+
+## Production MCP: Play with the whole production dataset
+
+Remove the local YouCongress tool:
+
+```
+claude mcp remove youcongress
+```
+
+Add the prod YouCongress tool:
+
+```
+claude mcp add --transport http youcongress http://youcongress.org/mcp
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+```
+claude "Find quotes and explain why some people endorse or oppose a ban on advanced open source ai. Include source urls"
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Now check how it looks in a topic with +250 quotes:
+
+```sh
+claude "Find quotes about a basic income and group them by argument"
+```
+
+## Server-Sent Events (SSE)
+
+In production, if you have more than one server, ensure that MCP requests are routed to the instance that holds the session. Open source example [here](https://github.com/youcongress/youcongress/compare/mcp_server?expand=1#diff-b1fda15f1ee4f6ce887b6eec7aee37186f6d2f6c23855bd7048752f03d49a0a7R1).
+
+## MCP Authentication
+
+To authenticate users in MCP, we can follow two approaches:
+
+* Ask users to use their API key in the URL that we use to discover our tools. E.g. `https://youcongress.org/mcp?key=...` (risky as users may share urls)
+* Use oauth so the user is redirected to our site to grant rights.
+
+## Libraries
+
+These are useful hex packages that you may want to explore:
+
+<!-- livebook:{"break_markdown":true} -->
+
+* [llm_composer](https://github.com/doofinder/llm_composer)
+* [req_llm](https://github.com/agentjido/req_llm)
+
+## Lessons
+
+Unless you have a good reason to do otherwise:
+
+* Use APIs instead of your own neural network or AI model.
+* Use OpenRouter so you can quickly change across models and providers.
+* Use structured outputs to increase reliability.
+
+## Thanks!
+
+Feel free to reach me at `hec@hecperez.com` if you have any questions
+
+* or if you're interested in working at [Doofinder](https://doofinder.com)
+* or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
+* or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
+
+<!-- livebook:{"offset":12749,"stamp":{"token":"XCP.2bOklU0mbhMwau_UO1QCvElLS90dQpJZ5EJ76km04sg7vLaNxZVRP7jnePs_1nHsWth9fvYKMu8Y41Pn7K6D7xDNiAtn67SG5srwW_84xDio9iDZPXytTzjux63R","version":2}} -->
