@@ -11,7 +11,7 @@ Mix.install([
 
 I'm Hector Perez, you can reach me at hec@hecperez.com, [Linkedin](https://www.linkedin.com/in/hectorperezarenas), [Bluesky](https://bsky.app/profile/hecperez.com) or [X](https://x.com/arpahector):
 
-* Team lead/manager of the AI team at [Doofinder](https:doofinder.com). We build apps for e-commerce stores: search engine, product recommendations, AI assistant (try it [here](https://www.eurekakids.es)) and others. **We're hiring!**
+* Team lead/manager of the AI team at [Doofinder](https://doofinder.com). We build apps for e-commerce stores: search engine, product recommendations, AI assistant (try it [here](https://www.eurekakids.es)) and others. **We're hiring!**
 * Organizer of the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir/events/312649476). Would you like to give a talk or workshop? Reach me.
 * Creator of [notes.club](https://notes.club): an [open source](https://github.com/notesclub/notesclub) site to discover Livebook notebooks.
 * Founder of [YouCongress.org](https://youcongress.org) to help citizens, journalists and policymakers understand what experts and citizens think about AI governance and AI's impact on society. It's also an [open source](https://github.com/youcongress/youcongress) phoenix app.
@@ -21,14 +21,16 @@ I'm Hector Perez, you can reach me at hec@hecperez.com, [Linkedin](https://www.l
 * Examples and exercises to use LLMs and agents in applications
 * Create your first MCP Server
 
+## Add OpenRouter API key
+
+In this workshop, you'll be provided with an OpenRouter api key so no need to create an account there. But you need to add it to Livebook (left menu -> secrets -> `OPENROUTER_API_KEY` = `the one provided in this workshop`)
+
 ## LLM Example: extract tags from Livebook notebooks
 
 ```elixir
 url = "https://notes.club/josevalim/livebooks/talks/2024/09-euruko"
 notebook = Req.get!(url <> "/raw").body
 ```
-
-In this workshop, you'll be provided with an OpenRouter api key so no need to create an account there. But you need to add it to Livebook (left menu -> secrets -> `OPENROUTER_API_KEY` = `the one provided in this workshop`)
 
 ```elixir
 prompt = """
@@ -487,4 +489,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":12819,"stamp":{"token":"XCP.sTqF4rVt9-z2fQQXry46rG4sDvpXyV9mcwt35bdz39ENyQ2NzyLtr-ekaC4j-dXSMelFXrfvyOJCYn5nRSC_Hzv_y6fu5OfiNyE8886oTJMFIrEccAj3X73b5Dsy","version":2}} -->
+<!-- livebook:{"offset":12848,"stamp":{"token":"XCP.xDTOmXV-27wIfcB-iP0DP4JkY4ZIl3fFGQQgVsaLhd6UVzEEEnvIygVTtwqXZrqvX7WsYSb5nN9oBMGJ4ea2EfNUnCG77Gfd_g6qmVtOnbF6jLPlYMfIV99ZlWq9","version":2}} -->
