@@ -44,6 +44,7 @@ response = Req.post!("https://openrouter.ai/api/v1/chat/completions",
     model: "openai/gpt-oss-120b",
     provider: %{
       sort: "throughput",
+      preferred_max_latency: 0.8
     },
     messages: [
       %{role: "user", content: prompt <> " \n\n#{notebook}"}
@@ -69,6 +70,7 @@ defmodule AI do
         model: "openai/gpt-oss-120b",
         provider: %{
           sort: "throughput",
+          preferred_max_latency: 0.8
         },
         messages: [
           %{role: "user", content: prompt}
@@ -485,4 +487,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":12749,"stamp":{"token":"XCP.2bOklU0mbhMwau_UO1QCvElLS90dQpJZ5EJ76km04sg7vLaNxZVRP7jnePs_1nHsWth9fvYKMu8Y41Pn7K6D7xDNiAtn67SG5srwW_84xDio9iDZPXytTzjux63R","version":2}} -->
+<!-- livebook:{"offset":12819,"stamp":{"token":"XCP.sTqF4rVt9-z2fQQXry46rG4sDvpXyV9mcwt35bdz39ENyQ2NzyLtr-ekaC4j-dXSMelFXrfvyOJCYn5nRSC_Hzv_y6fu5OfiNyE8886oTJMFIrEccAj3X73b5Dsy","version":2}} -->
