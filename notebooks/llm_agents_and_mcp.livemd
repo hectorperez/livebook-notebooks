@@ -1,3 +1,5 @@
+<!-- livebook:{"file_entries":[{"name":"YouCongress-MCP-Claude.png","type":"attachment"}]} -->
+
 # LLMs, agents and MCP in the Elixir Madrid meetup (workshop)
 
 ```elixir
@@ -378,6 +380,8 @@ Open `http://localhost:4000/mcp` in your browser and confirm it returns somethin
 
 Now add the MCP tool to your app. We're using Claude Code but it's similar in other tools:
 
+.claude/setttings.json
+
 ```json
 {
   "env": {
@@ -426,6 +430,16 @@ Find lorem ipsum quotes
 After you have done it, Claude should be able to find statements (policies and claims) and all quotes related to those statements.
 
 ## Production MCP: Play with the whole production dataset
+
+Option A: On claude.com (Web interface), you can open a new conversation -> + -> Connectors -> Manager connectors -> Add custom connector:
+
+Name: `YouCongress`
+
+Remote MCP Server URL: `https://youcongress.org/mcp`
+
+<!-- livebook:{"break_markdown":true} -->
+
+Option B (continue in Claude Code locally):
 
 Remove the local YouCongress tool:
 
@@ -489,4 +503,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":12849,"stamp":{"token":"XCP.lzFI802PUgNIQBNQeLMPVqASWCUGcet-nNsIUxKsj6oAmSg4LCuDA8urFL9I_QTaETOckCNbq7XEqaAXWYwzvLflmy3jmIqJ3HUBDTZ6fSRfpmRqZmuofNaRtJtV","version":2}} -->
+<!-- livebook:{"offset":13272,"stamp":{"token":"XCP.BBmcOYI85-wjNhNdYI9pUTGkOlWQwX7Mm_kxw2zEmFzuArSMhRBJRvJcAUtZHl00GZSmY83jY_LlrJgUC-EpDP5dAjlkeUegQ3Bu6NADkdaNqn_uINwX-sEs6W3M","version":2}} -->
