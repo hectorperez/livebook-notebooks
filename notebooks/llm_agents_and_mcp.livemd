@@ -269,65 +269,6 @@ mix deps.get
 
 <!-- livebook:{"break_markdown":true} -->
 
-Add to `application.ex`:
-
-<!-- livebook:{"force_markdown":true} -->
-
-```elixir
-# MCP Server
-children = [
-  ...
-  Anubis.Server.Registry,
-  {YouCongressWeb.MCPServer, transport: :streamable_http},
-]
-```
-
-<!-- livebook:{"break_markdown":true} -->
-
-Create the MCP Server:
-
-<!-- livebook:{"force_markdown":true} -->
-
-```elixir
-defmodule YouCongressWeb.MCPServer do
-  use Anubis.Server,
-    name: "YouCongress",
-    version: "1.0.0",
-    capabilities: [:tools]
-
-  # Tools
-  component(YouCongressWeb.MCPServer.Search)
-end
-```
-
-<!-- livebook:{"break_markdown":true} -->
-
-Add `/mcp` to `router.ex`:
-
-<!-- livebook:{"force_markdown":true} -->
-
-```elixir
-  scope "/" do
-    pipe_through(:api)
-
-    forward "/mcp", Elixir.Anubis.Server.Transport.StreamableHTTP.Plug,
-      server: YouCongressWeb.MCPServer
-  end
-```
-
-<!-- livebook:{"break_markdown":true} -->
-
-Add this to config/test.exs
-
-<!-- livebook:{"force_markdown":true} -->
-
-```elixir
-# Disable the MCP session store during tests to avoid runtime warnings.
-config :anubis_mcp, :session_store, enabled: false
-```
-
-<!-- livebook:{"break_markdown":true} -->
-
 And the first Search tool:
 
 <!-- livebook:{"force_markdown":true} -->
@@ -364,6 +305,65 @@ defmodule YouCongressWeb.MCPServer.Search do
     {:reply, Response.json(Response.tool(), data), frame}
   end
 end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Create the MCP Server:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+defmodule YouCongressWeb.MCPServer do
+  use Anubis.Server,
+    name: "YouCongress",
+    version: "1.0.0",
+    capabilities: [:tools]
+
+  # Tools
+  component(YouCongressWeb.MCPServer.Search)
+end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add to `application.ex`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+# MCP Server
+children = [
+  ...
+  Anubis.Server.Registry,
+  {YouCongressWeb.MCPServer, transport: :streamable_http},
+]
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add `/mcp` to `router.ex`:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+  scope "/" do
+    pipe_through(:api)
+
+    forward "/mcp", Elixir.Anubis.Server.Transport.StreamableHTTP.Plug,
+      server: YouCongressWeb.MCPServer
+  end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Add this to config/test.exs
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+# Disable the MCP session store during tests to avoid runtime warnings.
+config :anubis_mcp, :session_store, enabled: false
 ```
 
 <!-- livebook:{"break_markdown":true} -->
@@ -436,7 +436,7 @@ claude mcp remove youcongress
 Add the prod YouCongress tool:
 
 ```
-claude mcp add --transport http youcongress http://youcongress.org/mcp
+claude mcp add --transport http youcongress https://youcongress.org/mcp
 ```
 
 <!-- livebook:{"break_markdown":true} -->
@@ -489,4 +489,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":12848,"stamp":{"token":"XCP.xDTOmXV-27wIfcB-iP0DP4JkY4ZIl3fFGQQgVsaLhd6UVzEEEnvIygVTtwqXZrqvX7WsYSb5nN9oBMGJ4ea2EfNUnCG77Gfd_g6qmVtOnbF6jLPlYMfIV99ZlWq9","version":2}} -->
+<!-- livebook:{"offset":12849,"stamp":{"token":"XCP.lzFI802PUgNIQBNQeLMPVqASWCUGcet-nNsIUxKsj6oAmSg4LCuDA8urFL9I_QTaETOckCNbq7XEqaAXWYwzvLflmy3jmIqJ3HUBDTZ6fSRfpmRqZmuofNaRtJtV","version":2}} -->
