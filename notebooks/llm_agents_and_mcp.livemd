@@ -251,6 +251,7 @@ Prepare the repo:
 
 * `git clone git@github.com:youcongress/youcongress.git`
 * `cd youcongress`
+* `git checkout 9484142`
 * `mix deps.get`
 * `mix ecto.setup`
 * confirm `localhost:4000` works in your browser.
@@ -503,4 +504,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":13272,"stamp":{"token":"XCP.BBmcOYI85-wjNhNdYI9pUTGkOlWQwX7Mm_kxw2zEmFzuArSMhRBJRvJcAUtZHl00GZSmY83jY_LlrJgUC-EpDP5dAjlkeUegQ3Bu6NADkdaNqn_uINwX-sEs6W3M","version":2}} -->
+<!-- livebook:{"offset":13297,"stamp":{"token":"XCP.7WhDzuVhEUT2b5sdqi23Tim1qs7bpRY_Dgm_94pobyz4oibGVg-Ysvkapro4t384LNjhp5b9DHFMTP2_kHigOyG4MBe4pE9VPL4sf7dv403taxjTzoQJbnf3Ku9G","version":2}} -->
