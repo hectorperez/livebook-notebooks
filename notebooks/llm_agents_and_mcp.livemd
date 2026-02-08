@@ -470,7 +470,7 @@ claude "Find quotes about a basic income and group them by argument"
 
 ## Server-Sent Events (SSE)
 
-In production, if you have more than one server, ensure that MCP requests are routed to the instance that holds the session. Open source example [here](https://github.com/youcongress/youcongress/compare/mcp_server?expand=1#diff-b1fda15f1ee4f6ce887b6eec7aee37186f6d2f6c23855bd7048752f03d49a0a7R1).
+In production, if you have more than one server, ensure that MCP requests are routed to the instance that holds the session. Open source example [here](https://github.com/youcongress/youcongress/commit/0cc808ce0d393ff3971ba817c38cce381a337a76#diff-b1fda15f1ee4f6ce887b6eec7aee37186f6d2f6c23855bd7048752f03d49a0a7R1).
 
 ## MCP Authentication
 
@@ -504,4 +504,4 @@ Feel free to reach me at `hec@hecperez.com` if you have any questions
 * or if you'd like to give a talk at the [Elixir Madrid meetup](https://www.meetup.com/madrid-elixir) (in English or Spanish)
 * or if you'd like to contribute to [YouCongress.org](https://youcongress.org) You can help [coding](https://github.com/youcongress/youcongress) and verifying quotes: pick an expert or policy topic and help keep their quoted positions accurate and up to date.
 
-<!-- livebook:{"offset":13297,"stamp":{"token":"XCP.7WhDzuVhEUT2b5sdqi23Tim1qs7bpRY_Dgm_94pobyz4oibGVg-Ysvkapro4t384LNjhp5b9DHFMTP2_kHigOyG4MBe4pE9VPL4sf7dv403taxjTzoQJbnf3Ku9G","version":2}} -->
+<!-- livebook:{"offset":13317,"stamp":{"token":"XCP.FkRsHcrOD2e5SyxM0lOVUvRPyYZrCB-_vzOSv4XGxexVmpualdst3R7jRXL17fA0Ku78SMPy-U4TQxEwdilMsTRzWr35p9jDOEY4CeJi-XB7uHg-lVVrs9R2pZ3G","version":2}} -->
